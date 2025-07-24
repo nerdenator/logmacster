@@ -1,0 +1,61 @@
+{
+  "name": "logmacster",
+  "version": "1.0.0",
+  "description": "A macOS application for editing ADIF amateur radio log files in an Excel-like grid",
+  "main": "public/electron.js",
+  "homepage": "./",
+  "scripts": {
+    "electron": "electron .",
+    "electron-dev": "ELECTRON_IS_DEV=true electron .",
+    "build": "webpack --mode production",
+    "start": "webpack serve --mode development",
+    "dist": "npm run build && electron-builder",
+    "dist:mac": "npm run build && electron-builder --mac"
+  },
+  "keywords": [
+    "amateur radio",
+    "ADIF",
+    "log",
+    "macOS",
+    "electron"
+  ],
+  "author": "LogMacster",
+  "license": "MIT",
+  "build": {
+    "appId": "com.logmacster.app",
+    "productName": "LogMacster",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "build/**/*",
+      "public/electron.js",
+      "public/preload.js",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": "dmg"
+    }
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.0",
+    "@babel/preset-react": "^7.27.1",
+    "babel-loader": "^10.0.0",
+    "css-loader": "^7.1.2",
+    "electron": "^37.2.4",
+    "electron-builder": "^26.0.12",
+    "html-webpack-plugin": "^5.6.3",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.100.2",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.2"
+  },
+  "dependencies": {
+    "ag-grid-community": "^34.0.2",
+    "ag-grid-react": "^34.0.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}

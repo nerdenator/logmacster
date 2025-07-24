@@ -1,0 +1,138 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import LogGrid from './components/LogGrid';
+import { parseADIF, generateADIF, getEmptyQSO } from './utils/adif';
+import './App.css';
+
+const App = () => {
+  const [qsoData, setQsoData] = useState([]);
+  const [currentFile, setCurrentFile] = useState(null);
+  const [isModified, setIsModified] = useState(false);
+  const [header, setHeader] = useState('');
+
+  // Handle file operations from Electron menu
+  useEffect(() => {
+    if (window.electronAPI) {
+      // Handle file opened
+      window.electronAPI.onFileOpened((event, { filePath, content }) => {
+        try {
+          const parsed = parseADIF(content);
+          setQsoData(parsed.records);
+          setHeader(parsed.header);
+          setCurrentFile(filePath);
+          setIsModified(false);
+          console.log(`Loaded ${parsed.records.length} QSOs from ${filePath}`);
+        } catch (error) {
+          console.error('Error parsing ADIF file:', error);
+          alert('Error parsing ADIF file: ' + error.message);
+        }
+      });
+
+      // Handle save file
+      window.electronAPI.onSaveFile((event) => {
+        if (currentFile) {
+          saveFile(currentFile);
+        } else {
+          // Trigger save as dialog
+          window.electronAPI.onSaveFileAs((event, filePath) => {
+            saveFile(filePath);
+          });
+        }
+      });
+
+      // Handle save file as
+      window.electronAPI.onSaveFileAs((event, filePath) => {
+        saveFile(filePath);
+      });
+
+      // Handle new entry
+      window.electronAPI.onNewEntry((event) => {
+        addNewQSO();
+      });
+
+      return () => {
+        window.electronAPI.removeAllListeners('file-opened');
+        window.electronAPI.removeAllListeners('save-file');
+        window.electronAPI.removeAllListeners('save-file-as');
+        window.electronAPI.removeAllListeners('new-entry');
+      };
+    }
+  }, [currentFile, qsoData, header]);
+
+  const saveFile = async (filePath) => {
+    try {
+      const content = generateADIF(qsoData, header);
+      const result = await window.electronAPI.saveFile(filePath, content);
+      
+      if (result.success) {
+        setCurrentFile(filePath);
+        setIsModified(false);
+        console.log(`Saved to ${filePath}`);
+      } else {
+        alert('Error saving file: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error saving file:', error);
+      alert('Error saving file: ' + error.message);
+    }
+  };
+
+  const addNewQSO = () => {
+    const newQSO = getEmptyQSO();
+    setQsoData(prev => [...prev, newQSO]);
+    setIsModified(true);
+  };
+
+  const handleDataChange = useCallback((newData) => {
+    setQsoData(newData);
+    setIsModified(true);
+  }, []);
+
+  const handleDeleteRows = useCallback((selectedRows) => {
+    const selectedIndices = selectedRows.map(row => row.node.rowIndex);
+    setQsoData(prev => prev.filter((_, index) => !selectedIndices.includes(index)));
+    setIsModified(true);
+  }, []);
+
+  return (
+    <div className="app">
+      <div className="app-header">
+        <div className="app-title">
+          <h1>LogMacster</h1>
+          <span className="file-info">
+            {currentFile ? (
+              <>
+                {currentFile.split('/').pop()}
+                {isModified && ' *'}
+              </>
+            ) : (
+              'No file loaded'
+            )}
+          </span>
+        </div>
+        <div className="app-stats">
+          <span className="qso-count">{qsoData.length} QSOs</span>
+        </div>
+      </div>
+      
+      <div className="app-content">
+        {qsoData.length === 0 ? (
+          <div className="empty-state">
+            <h2>Welcome to LogMacster</h2>
+            <p>Open an ADIF file from the File menu to get started, or create a new log entry.</p>
+            <button onClick={addNewQSO} className="new-qso-button">
+              Add First QSO
+            </button>
+          </div>
+        ) : (
+          <LogGrid 
+            data={qsoData} 
+            onDataChange={handleDataChange}
+            onDeleteRows={handleDeleteRows}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default App;

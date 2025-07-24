@@ -1,6 +1,13 @@
-# LogMacster
+# LogMACster
 
 A native macOS application for amateur radio operators to open, edit, and manage ADIF (Amateur Radio Data Interchange Format) log files in an Excel-like grid interface.
+
+## A Brief Word
+I vibecoded this with GitHub CoPilot in agent mode in one night after not being able to find a good GUI app for reading ADIF files on Mac. 
+
+It's written in Electron.JS. I don't know Electron.JS and only know enough about React to be dangerous.
+
+There is absolutely no guarantee that any of this works correctly. If something's broken, well, 🤷🏼‍♂️. File a ticket, make a PR fixing it, fork it into your own project and do a better job, whatever. 
 
 ## Features
 

@@ -15,7 +15,8 @@ function createWindow() {
       enableRemoteModule: false,
       preload: path.join(__dirname, 'preload.js')
     },
-    titleBarStyle: 'hiddenInset', // macOS style title bar
+    titleBarStyle: 'default', // Traditional macOS window chrome
+    title: 'LogMacster - ADIF Log Editor',
     show: false
   });
 

@@ -66,6 +66,10 @@ const App = () => {
       if (result.success) {
         setCurrentFile(filePath);
         setIsModified(false);
+        // Update window title to show the saved file
+        if (window.electronAPI.updateTitle) {
+          window.electronAPI.updateTitle(filePath);
+        }
         console.log(`Saved to ${filePath}`);
       } else {
         alert('Error saving file: ' + result.error);
@@ -80,6 +84,31 @@ const App = () => {
     const newQSO = getEmptyQSO();
     setQsoData(prev => [...prev, newQSO]);
     setIsModified(true);
+    
+    // If this is the first QSO and no file is loaded, clear the title
+    if (!currentFile && qsoData.length === 0 && window.electronAPI.updateTitle) {
+      window.electronAPI.updateTitle(null);
+    }
+  };
+
+  const openFile = async () => {
+    if (window.electronAPI) {
+      try {
+        const result = await window.electronAPI.openFile();
+        
+        if (result.success && !result.canceled) {
+          const parsed = parseADIF(result.content);
+          setQsoData(parsed.records);
+          setHeader(parsed.header);
+          setCurrentFile(result.filePath);
+          setIsModified(false);
+          console.log(`Loaded ${parsed.records.length} QSOs from ${result.filePath}`);
+        }
+      } catch (error) {
+        console.error('Error opening ADIF file:', error);
+        alert('Error opening ADIF file: ' + error.message);
+      }
+    }
   };
 
   const handleDataChange = useCallback((newData) => {
@@ -135,9 +164,14 @@ const App = () => {
           <div className="empty-state">
             <h2>Welcome to LogMacster</h2>
             <p>Open an ADIF file from the File menu to get started, or create a new log entry.</p>
-            <button onClick={addNewQSO} className="new-qso-button">
-              Add First QSO
-            </button>
+            <div className="welcome-buttons">
+              <button onClick={openFile} className="open-file-button">
+                Open ADIF File
+              </button>
+              <button onClick={addNewQSO} className="new-qso-button">
+                Add First QSO
+              </button>
+            </div>
           </div>
         ) : (
           <LogGrid 

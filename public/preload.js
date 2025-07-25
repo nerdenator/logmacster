@@ -12,6 +12,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Save file to disk
   saveFile: (filePath, content) => ipcRenderer.invoke('save-file', { filePath, content }),
   
+  // Open file dialog
+  openFile: () => ipcRenderer.invoke('open-file'),
+  
+  // Update window title
+  updateTitle: (filePath) => ipcRenderer.invoke('update-title', filePath),
+  
   // Remove listeners
   removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel)
 });

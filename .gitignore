@@ -36,3 +36,6 @@ temp/
 
 # Electron
 out/
+
+# ADI files
+*.adi

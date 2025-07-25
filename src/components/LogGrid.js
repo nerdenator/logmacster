@@ -11,11 +11,6 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 const LogGrid = ({ data, onDataChange, onDeleteRows }) => {
   const [selectedRows, setSelectedRows] = useState([]);
 
-  // Debug logging
-  console.log('LogGrid received data:', data);
-  console.log('Data length:', data ? data.length : 'undefined');
-  console.log('First row:', data && data.length > 0 ? data[0] : 'no data');
-
   // Define column definitions
   const columnDefs = useMemo(() => [
     {
@@ -246,7 +241,11 @@ const LogGrid = ({ data, onDataChange, onDeleteRows }) => {
 
   // Handle delete key
   const onCellKeyDown = useCallback((event) => {
-    if (event.event.key === 'Delete' || event.event.key === 'Backspace') {
+    // Only trigger row deletion if user is NOT editing a cell
+    // Check if the cell is being edited by looking at the editing state
+    const isEditing = event.api.getEditingCells().length > 0;
+    
+    if ((event.event.key === 'Delete' || event.event.key === 'Backspace') && !isEditing) {
       if (selectedRows.length > 0) {
         event.event.preventDefault();
         const confirm = window.confirm(`Delete ${selectedRows.length} selected QSO(s)?`);

@@ -88,8 +88,24 @@ const App = () => {
   }, []);
 
   const handleDeleteRows = useCallback((selectedRows) => {
-    const selectedIndices = selectedRows.map(row => row.node.rowIndex);
-    setQsoData(prev => prev.filter((_, index) => !selectedIndices.includes(index)));
+    // Get the actual data objects from the selected rows
+    const selectedData = selectedRows.map(row => row.data);
+    console.log('Deleting rows with data:', selectedData);
+    
+    // Filter out the selected data objects from the qsoData array
+    setQsoData(prev => {
+      const newData = prev.filter(qso => {
+        // Check if this QSO is in the selected data
+        return !selectedData.some(selectedQso => {
+          // Compare QSOs by their key fields to identify them uniquely
+          return selectedQso.CALL === qso.CALL && 
+                 selectedQso.QSO_DATE === qso.QSO_DATE && 
+                 selectedQso.TIME_ON === qso.TIME_ON;
+        });
+      });
+      console.log('Data after deletion:', newData);
+      return newData;
+    });
     setIsModified(true);
   }, []);
 

@@ -2,7 +2,21 @@ const { app, BrowserWindow, Menu, dialog, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
+// Set the application name early for macOS menu bar
+app.setName('LogMacster');
+
 const isDev = process.env.ELECTRON_IS_DEV === 'true';
+
+// Helper function to update window title with filename
+function updateWindowTitle(window, filePath = null) {
+  const baseTitle = 'LogMacster - ADIF Log Editor';
+  if (filePath) {
+    const fileName = path.basename(filePath);
+    window.setTitle(`${fileName} - ${baseTitle}`);
+  } else {
+    window.setTitle(baseTitle);
+  }
+}
 
 function createWindow() {
   // Create the browser window
@@ -42,16 +56,16 @@ function createWindow() {
 
 function createMenu() {
   const template = [
-    {
-      label: 'LogMacster',
+    ...(process.platform === 'darwin' ? [{
+      label: app.getName(),
       submenu: [
         {
-          label: 'About LogMacster',
+          label: 'About ' + app.getName(),
           role: 'about'
         },
         { type: 'separator' },
         {
-          label: 'Hide LogMacster',
+          label: 'Hide ' + app.getName(),
           accelerator: 'Command+H',
           role: 'hide'
         },
@@ -73,7 +87,7 @@ function createMenu() {
           }
         }
       ]
-    },
+    }] : []),
     {
       label: 'File',
       submenu: [
@@ -93,7 +107,9 @@ function createMenu() {
               const filePath = result.filePaths[0];
               try {
                 const content = fs.readFileSync(filePath, 'utf8');
-                BrowserWindow.getFocusedWindow().webContents.send('file-opened', {
+                const focusedWindow = BrowserWindow.getFocusedWindow();
+                updateWindowTitle(focusedWindow, filePath);
+                focusedWindow.webContents.send('file-opened', {
                   filePath,
                   content
                 });
@@ -265,10 +281,24 @@ ipcMain.handle('open-file', async (event) => {
     if (!result.canceled && result.filePaths.length > 0) {
       const filePath = result.filePaths[0];
       const content = fs.readFileSync(filePath, 'utf8');
+      // Update window title when file is opened via button
+      const focusedWindow = BrowserWindow.getFocusedWindow();
+      updateWindowTitle(focusedWindow, filePath);
       return { success: true, filePath, content };
     } else {
       return { success: false, canceled: true };
     }
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+// Handle updating window title
+ipcMain.handle('update-title', async (event, filePath) => {
+  try {
+    const focusedWindow = BrowserWindow.getFocusedWindow();
+    updateWindowTitle(focusedWindow, filePath);
+    return { success: true };
   } catch (error) {
     return { success: false, error: error.message };
   }

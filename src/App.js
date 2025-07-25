@@ -66,6 +66,10 @@ const App = () => {
       if (result.success) {
         setCurrentFile(filePath);
         setIsModified(false);
+        // Update window title to show the saved file
+        if (window.electronAPI.updateTitle) {
+          window.electronAPI.updateTitle(filePath);
+        }
         console.log(`Saved to ${filePath}`);
       } else {
         alert('Error saving file: ' + result.error);
@@ -80,6 +84,11 @@ const App = () => {
     const newQSO = getEmptyQSO();
     setQsoData(prev => [...prev, newQSO]);
     setIsModified(true);
+    
+    // If this is the first QSO and no file is loaded, clear the title
+    if (!currentFile && qsoData.length === 0 && window.electronAPI.updateTitle) {
+      window.electronAPI.updateTitle(null);
+    }
   };
 
   const openFile = async () => {

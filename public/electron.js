@@ -250,6 +250,29 @@ ipcMain.handle('save-file', async (event, { filePath, content }) => {
   }
 });
 
+// Handle opening files
+ipcMain.handle('open-file', async (event) => {
+  try {
+    const result = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [
+        { name: 'ADIF Files', extensions: ['adi', 'adif'] },
+        { name: 'All Files', extensions: ['*'] }
+      ]
+    });
+
+    if (!result.canceled && result.filePaths.length > 0) {
+      const filePath = result.filePaths[0];
+      const content = fs.readFileSync(filePath, 'utf8');
+      return { success: true, filePath, content };
+    } else {
+      return { success: false, canceled: true };
+    }
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
 // This method will be called when Electron has finished initialization
 app.whenReady().then(() => {
   createWindow();

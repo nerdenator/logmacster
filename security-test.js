@@ -93,8 +93,9 @@ tests.push(
 
 // Test 4: Check CSP
 console.log('✅ Testing Content Security Policy...');
+let htmlFile;
 try {
-  const htmlFile = fs.readFileSync('./public/index.html', 'utf8');
+  htmlFile = fs.readFileSync('./public/index.html', 'utf8');
 } catch (err) {
   console.error('❌ HTML file not found at ./public/index.html');
   process.exit(1);

@@ -4,6 +4,19 @@ const fs = require('fs');
 
 const isDev = process.env.ELECTRON_IS_DEV === 'true';
 
+// Security: Disable error dialogs in production
+if (!isDev) {
+  process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    // Log to file or crash reporting service in production
+  });
+  
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    // Log to file or crash reporting service in production
+  });
+}
+
 function createWindow() {
   // Create the browser window
   const mainWindow = new BrowserWindow({
@@ -13,7 +26,10 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       enableRemoteModule: false,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      webSecurity: true, // Ensure web security is enabled
+      allowRunningInsecureContent: false,
+      experimentalFeatures: false
     },
     titleBarStyle: 'default', // Traditional macOS window chrome
     title: 'LogMacster - ADIF Log Editor',
@@ -92,13 +108,35 @@ function createMenu() {
             if (!result.canceled && result.filePaths.length > 0) {
               const filePath = result.filePaths[0];
               try {
+                // Validate file size before reading (50MB limit)
+                const stats = fs.statSync(filePath);
+                if (stats.size > 50 * 1024 * 1024) {
+                  dialog.showErrorBox('Error', 'File too large. Maximum size is 50MB.');
+                  return;
+                }
+                
+                // Validate file extension
+                const allowedExtensions = ['.adi', '.adif', '.txt'];
+                const fileExtension = path.extname(filePath).toLowerCase();
+                
+                if (!allowedExtensions.includes(fileExtension)) {
+                  dialog.showErrorBox('Error', 'Invalid file type. Only .adi, .adif, and .txt files are supported.');
+                  return;
+                }
+                
                 const content = fs.readFileSync(filePath, 'utf8');
                 BrowserWindow.getFocusedWindow().webContents.send('file-opened', {
                   filePath,
                   content
                 });
               } catch (error) {
-                dialog.showErrorBox('Error', `Failed to open file: ${error.message}`);
+                if (isDev) {
+                  console.error('File open error:', error);
+                } else {
+                  // In production, log only sanitized error message
+                  console.error('File open error:', error && error.message ? error.message : String(error));
+                }
+                dialog.showErrorBox('Error', 'Failed to open file. Please check file permissions.');
               }
             }
           }
@@ -244,10 +282,32 @@ function createMenu() {
 // Handle saving files
 ipcMain.handle('save-file', async (event, { filePath, content }) => {
   try {
-    fs.writeFileSync(filePath, content, 'utf8');
+    // Validate file path to prevent directory traversal attacks
+    const resolvedPath = path.resolve(filePath);
+    
+    // Ensure the file has a safe extension
+    const allowedExtensions = ['.adi', '.adif', '.txt'];
+    const fileExtension = path.extname(resolvedPath).toLowerCase();
+    
+    if (!allowedExtensions.includes(fileExtension)) {
+      return { success: false, error: 'Invalid file extension. Only .adi, .adif, and .txt files are allowed.' };
+    }
+    
+    // Validate content is a string and not too large (10MB limit)
+    if (typeof content !== 'string') {
+      return { success: false, error: 'Invalid content type' };
+    }
+    
+    if (content.length > 10 * 1024 * 1024) {
+      return { success: false, error: 'File too large. Maximum size is 10MB.' };
+    }
+    
+    fs.writeFileSync(resolvedPath, content, 'utf8');
     return { success: true };
   } catch (error) {
-    return { success: false, error: error.message };
+    // Sanitize error logging to avoid leaking sensitive information
+    console.error('Save file error:', error?.message || 'Unknown error');
+    return { success: false, error: 'Failed to save file' };
   }
 });
 

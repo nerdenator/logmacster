@@ -24,9 +24,13 @@ export const ADIF_FIELDS = {
   'MY_CITY': { type: 'S', description: 'Logging station city' },
   'MY_STATE': { type: 'E', description: 'Logging station state' },
   'MY_COUNTRY': { type: 'E', description: 'Logging station country' },
+  'MY_LAT': { type: 'L', description: 'Logging station latitude' },
+  'MY_LON': { type: 'L', description: 'Logging station longitude' },
   'QTH': { type: 'S', description: 'Contacted station city' },
   'STATE': { type: 'E', description: 'Contacted station state' },
   'COUNTRY': { type: 'E', description: 'Contacted station country' },
+  'LAT': { type: 'L', description: 'Contacted station latitude' },
+  'LON': { type: 'L', description: 'Contacted station longitude' },
   'DXCC': { type: 'N', description: 'DXCC entity code' },
   
   // Contest and awards
@@ -215,6 +219,18 @@ export function validateField(fieldName, value) {
     case 'G': // Grid square
       if (value && !/^[A-R]{2}[0-9]{2}([A-X]{2})?$/i.test(value)) {
         errors.push('Invalid grid square format');
+      }
+      break;
+    case 'L': // Location (latitude/longitude)
+      if (value) {
+        const num = Number(value);
+        if (isNaN(num)) {
+          errors.push('Must be a valid decimal number');
+        } else if (fieldName.toUpperCase().includes('LAT') && (num < -90 || num > 90)) {
+          errors.push('Latitude must be between -90 and 90 degrees');
+        } else if (fieldName.toUpperCase().includes('LON') && (num < -180 || num > 180)) {
+          errors.push('Longitude must be between -180 and 180 degrees');
+        }
       }
       break;
   }

@@ -141,6 +141,64 @@ const LogGrid = ({ data, onDataChange, onDeleteRows }) => {
       }
     },
     {
+      field: 'LAT',
+      headerName: 'Latitude',
+      width: 120,
+      editable: true,
+      type: 'numericColumn',
+      valueFormatter: (params) => {
+        if (params.value !== null && params.value !== undefined && params.value !== '') {
+          const lat = parseFloat(params.value);
+          if (!isNaN(lat)) {
+            return lat.toFixed(6);
+          }
+        }
+        return params.value;
+      },
+      valueParser: (params) => {
+        // Remove degree symbol if present and parse as float
+        const cleaned = params.newValue.replace(/°/g, '').trim();
+        const parsed = parseFloat(cleaned);
+        return isNaN(parsed) ? cleaned : parsed;
+      },
+      cellStyle: (params) => {
+        const lat = parseFloat(params.value);
+        if (!isNaN(lat) && (lat < -90 || lat > 90)) {
+          return { backgroundColor: '#ffebee', color: '#c62828' };
+        }
+        return null;
+      }
+    },
+    {
+      field: 'LON',
+      headerName: 'Longitude',
+      width: 120,
+      editable: true,
+      type: 'numericColumn',
+      valueFormatter: (params) => {
+        if (params.value !== null && params.value !== undefined && params.value !== '') {
+          const lon = parseFloat(params.value);
+          if (!isNaN(lon)) {
+            return lon.toFixed(6) + '°';
+          }
+        }
+        return params.value;
+      },
+      valueParser: (params) => {
+        // Remove degree symbol if present and parse as float
+        const cleaned = params.newValue.replace(/°/g, '').trim();
+        const parsed = parseFloat(cleaned);
+        return isNaN(parsed) ? cleaned : parsed;
+      },
+      cellStyle: (params) => {
+        const lon = parseFloat(params.value);
+        if (!isNaN(lon) && (lon < -180 || lon > 180)) {
+          return { backgroundColor: '#ffebee', color: '#c62828' };
+        }
+        return null;
+      }
+    },
+    {
       field: 'POWER',
       headerName: 'Power (W)',
       width: 100,

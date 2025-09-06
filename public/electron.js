@@ -306,7 +306,7 @@ ipcMain.handle('save-file', async (event, { filePath, content }) => {
     return { success: true };
   } catch (error) {
     // Sanitize error logging to avoid leaking sensitive information
-    console.error('Save file error:', error && error.message);
+    console.error('Save file error:', error?.message || 'Unknown error');
     return { success: false, error: 'Failed to save file' };
   }
 });

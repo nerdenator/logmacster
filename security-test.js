@@ -46,8 +46,9 @@ const tests = [
 
 // Test 2: Check preload script validation
 console.log('✅ Testing preload script...');
+let preloadFile;
 try {
-  const preloadFile = fs.readFileSync('./public/preload.js', 'utf8');
+  preloadFile = fs.readFileSync('./public/preload.js', 'utf8');
 } catch (err) {
   console.error('❌ Preload script not found at ./public/preload.js');
   process.exit(1);

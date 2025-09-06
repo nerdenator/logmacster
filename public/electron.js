@@ -305,7 +305,8 @@ ipcMain.handle('save-file', async (event, { filePath, content }) => {
     fs.writeFileSync(resolvedPath, content, 'utf8');
     return { success: true };
   } catch (error) {
-    console.error('Save file error:', error);
+    // Sanitize error logging to avoid leaking sensitive information
+    console.error('Save file error:', error && error.message);
     return { success: false, error: 'Failed to save file' };
   }
 });

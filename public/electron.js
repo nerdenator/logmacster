@@ -130,7 +130,12 @@ function createMenu() {
                   content
                 });
               } catch (error) {
-                console.error('File open error:', error);
+                if (isDev) {
+                  console.error('File open error:', error);
+                } else {
+                  // In production, log only sanitized error message
+                  console.error('File open error:', error && error.message ? error.message : String(error));
+                }
                 dialog.showErrorBox('Error', 'Failed to open file. Please check file permissions.');
               }
             }
@@ -300,7 +305,8 @@ ipcMain.handle('save-file', async (event, { filePath, content }) => {
     fs.writeFileSync(resolvedPath, content, 'utf8');
     return { success: true };
   } catch (error) {
-    console.error('Save file error:', error);
+    // Sanitize error logging to avoid leaking sensitive information
+    console.error('Save file error:', error && error.message);
     return { success: false, error: 'Failed to save file' };
   }
 });

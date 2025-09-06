@@ -13,8 +13,9 @@ console.log('🔒 LogMacster Security Test Suite\n');
 
 // Test 1: Check if nodeIntegration is disabled
 console.log('✅ Testing Electron configuration...');
+let electronFile;
 try {
-  const electronFile = fs.readFileSync('./public/electron.js', 'utf8');
+  electronFile = fs.readFileSync('./public/electron.js', 'utf8');
 } catch (err) {
   console.error('❌ Electron configuration not found at ./public/electron.js');
   process.exit(1);

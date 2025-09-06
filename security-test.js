@@ -13,7 +13,12 @@ console.log('🔒 LogMacster Security Test Suite\n');
 
 // Test 1: Check if nodeIntegration is disabled
 console.log('✅ Testing Electron configuration...');
-const electronFile = fs.readFileSync('./public/electron.js', 'utf8');
+try {
+  const electronFile = fs.readFileSync('./public/electron.js', 'utf8');
+} catch (err) {
+  console.error('❌ Electron configuration not found at ./public/electron.js');
+  process.exit(1);
+}
 
 const tests = [
   {
@@ -40,7 +45,12 @@ const tests = [
 
 // Test 2: Check preload script validation
 console.log('✅ Testing preload script...');
-const preloadFile = fs.readFileSync('./public/preload.js', 'utf8');
+try {
+  const preloadFile = fs.readFileSync('./public/preload.js', 'utf8');
+} catch (err) {
+  console.error('❌ Preload script not found at ./public/preload.js');
+  process.exit(1);
+}
 
 tests.push(
   {
@@ -81,7 +91,12 @@ tests.push(
 
 // Test 4: Check CSP
 console.log('✅ Testing Content Security Policy...');
-const htmlFile = fs.readFileSync('./public/index.html', 'utf8');
+try {
+  const htmlFile = fs.readFileSync('./public/index.html', 'utf8');
+} catch (err) {
+  console.error('❌ HTML file not found at ./public/index.html');
+  process.exit(1);
+}
 
 tests.push(
   {

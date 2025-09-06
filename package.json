@@ -1,6 +1,6 @@
 {
   "name": "logmacster",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A macOS application for editing ADIF amateur radio log files in an Excel-like grid",
   "main": "public/electron.js",
   "homepage": "./",
@@ -10,7 +10,9 @@
     "build": "webpack --mode production",
     "start": "webpack serve --mode development",
     "dist": "npm run build && electron-builder",
-    "dist:mac": "npm run build && electron-builder --mac"
+    "dist:mac": "npm run build && electron-builder --mac",
+    "test": "node security-test.js",
+    "test:security": "node security-test.js"
   },
   "keywords": [
     "amateur radio",

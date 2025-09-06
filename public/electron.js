@@ -130,7 +130,12 @@ function createMenu() {
                   content
                 });
               } catch (error) {
-                console.error('File open error:', error);
+                if (isDev) {
+                  console.error('File open error:', error);
+                } else {
+                  // In production, log only sanitized error message
+                  console.error('File open error:', error && error.message ? error.message : String(error));
+                }
                 dialog.showErrorBox('Error', 'Failed to open file. Please check file permissions.');
               }
             }
